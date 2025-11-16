@@ -1,0 +1,40 @@
+* {
+    font: 18px sans-serif;
+}
+
+canvas {
+    border: 1px solid #000000;
+}
+
+body[data-progress] #start,
+body:not([data-progress]) #stop {
+    pointer-events: none;
+    background-color: #eee;
+    border-color: #ccc;
+    border-style: solid;
+    color: #bbb;
+}
+
+input[type=button] {
+    padding: 10px 20px;
+}
+
+section {
+    margin-bottom: 10px;
+    display: flex;
+    gap: 10px;
+}
+
+.centered {
+    justify-content: center;
+}
+
+#charts-container {
+    position: relative;
+    width: 100%;
+}
+
+#charts {
+    height: 240px;
+    width: 100%;
+}

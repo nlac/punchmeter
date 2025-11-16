@@ -1,0 +1,14 @@
+{
+  "maxTime": 256,
+  "fftSize": 512,
+  
+  "freqMass": 0.5,
+  "accMass": 0.5,
+  "resultMass": 0.5,
+  
+  "maxDelaySearchArea": 4,
+
+  "accMult": 3,
+  "soundMult": 0.6,
+  "resultMult": 0.03
+}
