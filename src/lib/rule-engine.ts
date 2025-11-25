@@ -124,6 +124,7 @@ export class RuleEngine {
 export function Trigger(
   include: (RegExp | string)[] | undefined,
   exclude?: (RegExp | string)[] | undefined,
+  preCondition?: (value: any, target?: any) => boolean,
   params?: any
 ): PropertyDecorator {
   return function (target: any, key: string | symbol) {
@@ -135,7 +136,9 @@ export function Trigger(
       },
       set(this: any, value: any) {
         this[privateKey] = value;
-        RuleEngine.get().trigger(include, exclude, params);
+        if (!preCondition || preCondition(value, target)) {
+          RuleEngine.get().trigger(include, exclude, params);
+        }
       },
       enumerable: true,
       configurable: true,

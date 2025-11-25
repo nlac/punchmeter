@@ -12,7 +12,7 @@ export enum TrainStatus {
 
 export class TrainState extends CalibrateState {
   trainStatus: TrainStatus;
-  enableCharts: boolean;
+  enableCharts = false;
 
   constructor() {
     super();

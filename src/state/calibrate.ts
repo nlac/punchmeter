@@ -14,7 +14,7 @@ export class CalibrateState extends ChartState {
       {
         title: "Calibrate",
         onClick: () => {
-          RuleEngine.get().trigger([RuleId.Calibrate]);
+          RuleEngine.get().trigger([RuleId.CalibrationTriggered]);
         },
       },
     ]);
@@ -34,11 +34,12 @@ export class CalibrateState extends ChartState {
     }
   }
 
-  async calibrateDelay() {
-    this.soundDelay = 0;
+  async startCalibrateDelay() {
+    this.soundDelay = undefined;
+
     setupButtons([
       {
-        title: "Calibrating signal delays...",
+        title: "Calibrating sound delay...",
         disabled: true,
       },
     ]);
@@ -49,9 +50,10 @@ export class CalibrateState extends ChartState {
       this.listener = this._listener.bind(this);
       window.addEventListener("devicemotion", this.listener);
     }
+    RuleEngine.get().trigger([RuleId.DelayCalibrationStarted]);
   }
 
-  async calibratePower() {
+  async startCalibratePower() {
     this.maxPower = 0;
     setupButtons([
       {
@@ -62,21 +64,14 @@ export class CalibrateState extends ChartState {
     await sound.speak("Hit 3 power punch after the beep");
     await sound.beep();
     this.resetWindow();
-  }
-
-  isDelayCalibrated() {
-    return this.soundDelay > 0;
-  }
-
-  isPowerCalibrated() {
-    return this.maxPower > 0;
+    RuleEngine.get().trigger([RuleId.PowerCalibrationStarted]);
   }
 
   hasFullWindow() {
     return this.slidedAccArray.length >= config.maxTime;
   }
 
-  getDelay() {
+  calculateDelay() {
     if (!this.hasFullWindow()) {
       return;
     }
@@ -101,12 +96,20 @@ export class CalibrateState extends ChartState {
     console.debug(`soundDelay: ${this.soundDelay}`);
   }
 
-  getPower() {
+  calculatePower() {
     if (!this.hasFullWindow()) {
       return;
     }
     // triggering PowerSet
     this.maxPower = Math.max(...this.slidedResultArray);
+
+    const maxSound = Math.max(...this.slidedSoundArray);
+    const maxAcc = Math.max(...this.slidedAccArray);
+
+    const gap = 0.75;
+    this.accMult = (gap * this.maxChart) / maxAcc;
+    this.soundMult = (gap * this.maxChart) / maxSound;
+    this.resultMult = (gap * this.maxChart) / this.maxPower;
 
     this.resetWindow();
     console.debug(`maxPower: ${this.maxPower}`);

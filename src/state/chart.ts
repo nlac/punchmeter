@@ -24,6 +24,9 @@ const getResult = (
   return max1 * max2;
 };
 
+const isDelayCalibrated = (delay: any) => typeof delay === "number";
+const isPowerCalibrated = (power: number) => power > 0;
+
 export class ChartState {
   protected chartWrapper: ChartWrapper;
   slidedAccArray: number[] = [];
@@ -31,10 +34,15 @@ export class ChartState {
   slidedResultArray: number[] = [];
   freqDataArray!: Uint8Array;
 
-  @Trigger([RuleId.DelaySet])
-  soundDelay!: number;
+  maxChart = 100;
+  accMult = 1.0;
+  soundMult = 0.1;
+  resultMult = 0.01;
 
-  @Trigger([RuleId.PowerSet])
+  @Trigger([RuleId.DelayCalibrated], [], isDelayCalibrated)
+  soundDelay!: number | undefined;
+
+  @Trigger([RuleId.PowerCalibrated], [], isPowerCalibrated)
   maxPower!: number;
 
   constructor() {
@@ -63,12 +71,20 @@ export class ChartState {
           y: {
             type: "linear",
             title: { text: "Value", display: true },
-            min: -100,
-            max: 100,
+            min: -this.maxChart,
+            max: this.maxChart,
           },
         },
       }
     );
+  }
+
+  isDelayCalibrated() {
+    return isDelayCalibrated(this.soundDelay);
+  }
+
+  isPowerCalibrated() {
+    return isPowerCalibrated(this.maxPower);
   }
 
   // will be overridden
@@ -113,11 +129,11 @@ export class ChartState {
     // -> the corresponding acceleration value is in the past
     const len = this.slidedSoundArray.length;
     const result =
-      len >= config.maxDelaySearchArea + this.soundDelay
+      len >= config.maxDelaySearchArea + (this.soundDelay ?? 0)
         ? getResult(
             this.slidedAccArray,
-            len - config.maxDelaySearchArea - this.soundDelay,
-            len - this.soundDelay,
+            len - config.maxDelaySearchArea - (this.soundDelay ?? 0),
+            len - (this.soundDelay ?? 0),
             this.slidedSoundArray,
             len - config.maxDelaySearchArea,
             len
@@ -143,21 +159,15 @@ export class ChartState {
         0,
         1,
         0,
-        config.resultMult
+        this.resultMult
       ),
-      sound: sound.toChartData(
-        this.slidedSoundArray,
-        0,
-        1,
-        0,
-        config.soundMult
-      ),
+      sound: sound.toChartData(this.slidedSoundArray, 0, 1, 0, this.soundMult),
       acc: sound.toChartData(
         this.slidedAccArray,
-        this.soundDelay,
+        this.soundDelay ?? 0,
         1,
         0,
-        config.accMult
+        this.accMult
       ),
     });
   }

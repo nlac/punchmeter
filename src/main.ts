@@ -8,20 +8,27 @@ const appState = new TrainState();
 RuleEngine.get()
 
   // workflow of calibrating
-  .register(RuleId.Calibrate, function (this: Rule, params: any) {
-    appState.calibrateDelay();
+  .register(RuleId.CalibrationTriggered, function (this: Rule, params: any) {
+    appState.enableCharts = false;
+    appState.startCalibrateDelay();
     return true;
   })
-  .register(RuleId.DelaySet, function (this: Rule, params: any) {
-    if (appState.isDelayCalibrated()) {
-      appState.calibratePower();
-    }
+  .register(RuleId.DelayCalibrationStarted, function (this: Rule, params: any) {
+    appState.enableCharts = true;
     return true;
   })
-  .register(RuleId.PowerSet, function (this: Rule, params: any) {
-    if (appState.isPowerCalibrated()) {
-      appState.finishTraining(true);
-    }
+  .register(RuleId.DelayCalibrated, function (this: Rule, params: any) {
+    appState.enableCharts = false;
+    appState.startCalibratePower();
+    return true;
+  })
+  .register(RuleId.PowerCalibrationStarted, function (this: Rule, params: any) {
+    appState.enableCharts = true;
+    return true;
+  })
+  .register(RuleId.PowerCalibrated, function (this: Rule, params: any) {
+    appState.enableCharts = false;
+    appState.finishTraining(true);
     return true;
   })
 
@@ -41,15 +48,19 @@ RuleEngine.get()
 
   // handler of the devicemotion event listener
   .register("listening", function (this: Rule, params: any) {
-    appState.updateChart();
+    if (appState.enableCharts) {
+      appState.updateChart();
+    }
 
     if (!appState.isDelayCalibrated() && appState.hasFullWindow()) {
-      appState.getDelay();
+      appState.calculateDelay();
+      appState.enableCharts = true;
       return;
     }
 
     if (!appState.isPowerCalibrated() && appState.hasFullWindow()) {
-      appState.getPower();
+      appState.calculatePower();
+      appState.enableCharts = true;
       return;
     }
 
