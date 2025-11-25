@@ -7,7 +7,7 @@ type ButtonState = {
 
 export const setupButtons = (buttonState: ButtonState[]) => {
   const buttons: HTMLInputElement[] = Array.from(
-    $(".centered")!.children
+    $("#buttons-container")!.children
   ) as HTMLInputElement[];
 
   buttons.forEach((b) => {
@@ -27,3 +27,14 @@ export const setupButtons = (buttonState: ButtonState[]) => {
     buttons[i].onclick = bs.onClick ?? (() => {});
   });
 };
+
+export enum DisplayAttrs {
+  Time = "time",
+  Average = "average",
+  Punches = "punches",
+  WeakPunches = "weak-punches",
+  StrongPunches = "strong-punches"
+}
+
+export const updateCard = (attr: string, value: string) =>
+  (($(".display-container ." + attr) as HTMLSpanElement)!.innerHTML = value);

@@ -4,13 +4,13 @@
   
   "freqMass": 0.5,
   "accMass": 0.5,
-  "resultMass": 0.5,
+  "powerMass": 0.5,
   
   "maxDelaySearchArea": 4,
 
   "accMult": 3,
   "soundMult": 1,
-  "resultMult": 0.03,
+  "powerMult": 0.03,
 
-  "emulatedTimerFreq": 20
+  "emulatedTimerFreq": 25
 }

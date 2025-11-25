@@ -3,7 +3,7 @@
     "target": "es6",
     "module": "es6",
     "moduleResolution": "bundler",
-    "lib": ["ES6", "DOM", "DOM.Iterable"],
+    "lib": ["ES2017", "DOM", "DOM.Iterable"],
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,

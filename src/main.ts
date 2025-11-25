@@ -10,7 +10,7 @@ setupEmulate(appState);
 
 // high level application logic extracted here
 RuleEngine.get()
-  .register(RuleId.SensorPresenceDetermined, function (this: Rule, params: any) {
+  .register(RuleId.SensorPresenceDetermined, function (this: Rule) {
     if (!hasSensor()) {
       document.body.classList.add("emulated-sensor");
     }
@@ -18,46 +18,46 @@ RuleEngine.get()
   })
 
   // workflow of calibrating
-  .register(RuleId.CalibrationTriggered, function (this: Rule, params: any) {
+  .register(RuleId.CalibrationTriggered, function (this: Rule) {
     appState.enableCharts = false;
     appState.startCalibrateDelay();
     return true;
   })
-  .register(RuleId.DelayCalibrationStarted, function (this: Rule, params: any) {
+  .register(RuleId.DelayCalibrationStarted, function (this: Rule) {
     appState.enableCharts = true;
     return true;
   })
-  .register(RuleId.DelayCalibrated, function (this: Rule, params: any) {
+  .register(RuleId.DelayCalibrated, function (this: Rule) {
     appState.enableCharts = false;
     appState.startCalibratePower();
     return true;
   })
-  .register(RuleId.PowerCalibrationStarted, function (this: Rule, params: any) {
+  .register(RuleId.PowerCalibrationStarted, function (this: Rule) {
     appState.enableCharts = true;
     return true;
   })
-  .register(RuleId.PowerCalibrated, function (this: Rule, params: any) {
+  .register(RuleId.PowerCalibrated, function (this: Rule) {
     appState.enableCharts = false;
     appState.finishTraining(true);
     return true;
   })
 
   // workflow of the actual training
-  .register(RuleId.TrainStart, function (this: Rule, params: any) {
+  .register(RuleId.TrainStart, function (this: Rule) {
     appState.startTraining();
     return true;
   })
-  .register(RuleId.TrainPause, function (this: Rule, params: any) {
+  .register(RuleId.TrainPause, function (this: Rule) {
     appState.pauseTraining();
     return true;
   })
-  .register(RuleId.TrainFinish, function (this: Rule, params: any) {
+  .register(RuleId.TrainFinish, function (this: Rule) {
     appState.finishTraining(false);
     return true;
   })
 
   // handler of the devicemotion event listener
-  .register("listening", function (this: Rule, params: any) {
+  .register("listening", function (this: Rule) {
     if (appState.enableCharts) {
       appState.updateChart();
     }

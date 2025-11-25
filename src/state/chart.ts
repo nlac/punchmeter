@@ -12,7 +12,7 @@ const pushAndSlide = (newElement: any[], arr: any[], maxLength: number) => {
   }
 };
 
-const getResult = (
+const getPower = (
   arr1: number[],
   from1: number,
   to1: number,
@@ -34,13 +34,13 @@ export class ChartState {
   protected chartWrapper: ChartWrapper;
   slidedAccArray: number[] = [];
   slidedSoundArray: number[] = [];
-  slidedResultArray: number[] = [];
+  slidedPowerArray: number[] = [];
   freqDataArray!: Uint8Array;
 
   maxChart = 100;
   accMult = 1.0;
   soundMult = 0.1;
-  resultMult = 0.01;
+  powerMult = 0.01;
 
   @Trigger([RuleId.DelayCalibrated], [], isDelayCalibrated)
   soundDelay!: number | undefined;
@@ -52,17 +52,17 @@ export class ChartState {
     this.chartWrapper = new ChartWrapper(
       $<HTMLCanvasElement>("#charts")!.getContext("2d"),
       {
-        result: {
-          backgroundColor: "#000000",
-          borderColor: "#000000",
+        power: {
+          backgroundColor: "#66ff66",
+          borderColor: "#66ff66",
         },
         sound: {
-          backgroundColor: "#ff9999",
-          borderColor: "#ff9999",
+          backgroundColor: "#993333",
+          borderColor: "#993333",
         },
         acc: {
-          backgroundColor: "#99ccff",
-          borderColor: "#99ccff",
+          backgroundColor: "#3333bb",
+          borderColor: "#3333bb",
         },
       },
       {
@@ -130,15 +130,15 @@ export class ChartState {
       soundDerivative,
     ])[0];
 
-    // calculating result from the two type of signals
+    // calculating power from the two type of signals
     // since sound is processed with a delay compared to the acceleration, it should be corrected:
     // -> the corresponding acceleration value is in the past
     const len = this.slidedSoundArray.length;
     const r = config.maxDelaySearchArea;
     const d = this.soundDelay ?? 0;
-    const result =
+    const power =
       len >= r + d
-        ? getResult(
+        ? getPower(
             hasSensor() ? this.slidedAccArray : this.slidedSoundArray,
             len - r - d,
             len - d,
@@ -148,27 +148,19 @@ export class ChartState {
           )
         : 0;
 
-    const heavyResult = sound.heavyValue("result", config.resultMass, [
-      result,
-    ])[0];
+    const heavyPower = sound.heavyValue("power", config.powerMass, [power])[0];
 
     // display
     pushAndSlide(heavyAcc, this.slidedAccArray, config.maxTime);
     pushAndSlide(heavySoundDerivative, this.slidedSoundArray, config.maxTime);
-    pushAndSlide(heavyResult, this.slidedResultArray, config.maxTime);
+    pushAndSlide(heavyPower, this.slidedPowerArray, config.maxTime);
 
     RuleEngine.get().trigger([RuleId.Listening]);
   }
 
   updateChart() {
     this.chartWrapper.update({
-      result: sound.toChartData(
-        this.slidedResultArray,
-        0,
-        1,
-        0,
-        this.resultMult
-      ),
+      power: sound.toChartData(this.slidedPowerArray, 0, 1, 0, this.powerMult),
       sound: sound.toChartData(this.slidedSoundArray, 0, 1, 0, this.soundMult),
       acc: sound.toChartData(
         this.slidedAccArray,

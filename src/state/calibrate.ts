@@ -1,6 +1,6 @@
 import * as config from "../config.json";
 import { sound } from "../lib/sound";
-import { setupButtons } from "./buttons";
+import { setupButtons } from "../lib/ui";
 import { RuleEngine } from "../lib/rule-engine";
 import { RuleId } from "./rules-ids";
 import { ChartState } from "./chart";
@@ -24,7 +24,7 @@ export class CalibrateState extends ChartState {
   resetWindow() {
     this.slidedAccArray = [];
     this.slidedSoundArray = [];
-    this.slidedResultArray = [];
+    this.slidedPowerArray = [];
     this.updateChart();
   }
 
@@ -44,7 +44,7 @@ export class CalibrateState extends ChartState {
         disabled: true,
       },
     ]);
-    await sound.speak("Hit a single power punch after the beep");
+    await sound.speak("Hit one single punch after the beep");
     await sound.beep();
     this.resetWindow();
     if (!this.listener) {
@@ -109,7 +109,7 @@ export class CalibrateState extends ChartState {
       return;
     }
     // triggering PowerSet
-    this.maxPower = Math.max(...this.slidedResultArray);
+    this.maxPower = Math.max(...this.slidedPowerArray);
 
     const maxSound = Math.max(...this.slidedSoundArray);
     const maxAcc = Math.max(...this.slidedAccArray);
@@ -117,7 +117,7 @@ export class CalibrateState extends ChartState {
     const gap = 0.75;
     this.accMult = (gap * this.maxChart) / maxAcc;
     this.soundMult = (gap * this.maxChart) / maxSound;
-    this.resultMult = (gap * this.maxChart) / this.maxPower;
+    this.powerMult = (gap * this.maxChart) / this.maxPower;
 
     this.resetWindow();
     console.info(`maxPower: ${this.maxPower}`);

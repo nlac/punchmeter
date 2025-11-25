@@ -15,12 +15,34 @@
     </script>
   </head>
   <body>
-    <h3 class="only-emulated warn">EMULATED ACCELERATION SENSOR - RELYING SOLELY ON THE MIC</h3>
-    <h3>Punch meter (build #TS#)</h3>
+    <section id="header-container">
+      <h3>Punch meter <small class="ts">(#TS#)</small></h3>
+      <div class="only-emulated warn">mic only</div>
+    </section>
     <section id="charts-container">
       <canvas id="charts"></canvas>
     </section>
-    <section class="centered">
+    <section class="display-container">
+      <div class="stat-card">
+        <div class="stat-label">punches</div>
+        <div class="stat-values">
+          <div class="stat-value weak-punches">0</div>
+          <div class="stat-value strong-punches">0</div>
+          <div class="stat-value punches">0</div>
+        </div>
+      </div>
+    </section>
+    <section class="display-container">
+      <div class="stat-card">
+        <div class="stat-label">time</div>
+        <div class="stat-value time">00:00</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">avg %</div>
+        <div class="stat-value average">0.0</div>
+      </div>
+    </section>
+    <section id="buttons-container">
       <input type="button" id="action1" />
       <input type="button" id="action2" />
     </section>
