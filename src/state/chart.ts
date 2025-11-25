@@ -3,6 +3,7 @@ import * as config from "../config.json";
 import { RuleEngine, Trigger } from "../lib/rule-engine";
 import { RuleId } from "./rules-ids";
 import { sound } from "../lib/sound";
+import { hasSensor } from "../lib/emulate-sensor";
 
 const pushAndSlide = (newElement: any[], arr: any[], maxLength: number) => {
   arr.push(newElement);
@@ -24,7 +25,9 @@ const getResult = (
   return max1 * max2;
 };
 
-const isDelayCalibrated = (delay: any) => typeof delay === "number";
+const isDelayCalibrated = (delay: any) =>
+  typeof delay === "number" && delay > 0;
+
 const isPowerCalibrated = (power: number) => power > 0;
 
 export class ChartState {
@@ -50,13 +53,16 @@ export class ChartState {
       $<HTMLCanvasElement>("#charts")!.getContext("2d"),
       {
         result: {
+          backgroundColor: "#000000",
           borderColor: "#000000",
         },
         sound: {
+          backgroundColor: "#ff9999",
           borderColor: "#ff9999",
         },
         acc: {
-          borderColor: "#99ff99",
+          backgroundColor: "#99ccff",
+          borderColor: "#99ccff",
         },
       },
       {
@@ -128,14 +134,16 @@ export class ChartState {
     // since sound is processed with a delay compared to the acceleration, it should be corrected:
     // -> the corresponding acceleration value is in the past
     const len = this.slidedSoundArray.length;
+    const r = config.maxDelaySearchArea;
+    const d = this.soundDelay ?? 0;
     const result =
-      len >= config.maxDelaySearchArea + (this.soundDelay ?? 0)
+      len >= r + d
         ? getResult(
-            this.slidedAccArray,
-            len - config.maxDelaySearchArea - (this.soundDelay ?? 0),
-            len - (this.soundDelay ?? 0),
-            this.slidedSoundArray,
-            len - config.maxDelaySearchArea,
+            hasSensor() ? this.slidedAccArray : this.slidedSoundArray,
+            len - r - d,
+            len - d,
+            hasSensor() ? this.slidedSoundArray : this.slidedAccArray,
+            len - r,
             len
           )
         : 0;
@@ -164,7 +172,7 @@ export class ChartState {
       sound: sound.toChartData(this.slidedSoundArray, 0, 1, 0, this.soundMult),
       acc: sound.toChartData(
         this.slidedAccArray,
-        this.soundDelay ?? 0,
+        hasSensor() ? this.soundDelay ?? 0 : -(this.soundDelay ?? 0),
         1,
         0,
         this.accMult

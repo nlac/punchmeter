@@ -4,6 +4,7 @@ import { setupButtons } from "./buttons";
 import { RuleEngine } from "../lib/rule-engine";
 import { RuleId } from "./rules-ids";
 import { ChartState } from "./chart";
+import { hasSensor } from "../lib/emulate-sensor";
 
 export class CalibrateState extends ChartState {
   listener!: ((e: DeviceMotionEvent) => Promise<void>) | undefined;
@@ -90,10 +91,17 @@ export class CalibrateState extends ChartState {
       }
     }
     // triggering DelaySet
-    this.soundDelay = soundMaxIdx - accMaxIdx; // supposed to be positive
+    const delay = soundMaxIdx - accMaxIdx;
+    if (delay <= 0 && hasSensor()) {
+      console.info(`soundDelay in invalid - restart calibrating`);
+      this.soundDelay = undefined;
+      this.resetWindow();
+      return;
+    }
 
+    this.soundDelay = Math.abs(delay); // supposed to be positive
     this.resetWindow();
-    console.debug(`soundDelay: ${this.soundDelay}`);
+    console.info(`soundDelay: ${this.soundDelay}`);
   }
 
   calculatePower() {
@@ -112,6 +120,6 @@ export class CalibrateState extends ChartState {
     this.resultMult = (gap * this.maxChart) / this.maxPower;
 
     this.resetWindow();
-    console.debug(`maxPower: ${this.maxPower}`);
+    console.info(`maxPower: ${this.maxPower}`);
   }
 }

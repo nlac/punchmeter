@@ -1,11 +1,21 @@
 import { Rule, RuleEngine } from "./lib/rule-engine";
 import { RuleId } from "./state/rules-ids";
 import { TrainState, TrainStatus } from "./state/train";
+import { hasSensor, setupEmulate } from "./lib/emulate-sensor";
+
 
 const appState = new TrainState();
 
+setupEmulate(appState);
+
 // high level application logic extracted here
 RuleEngine.get()
+  .register(RuleId.SensorPresenceDetermined, function (this: Rule, params: any) {
+    if (!hasSensor()) {
+      document.body.classList.add("emulated-sensor");
+    }
+    return true;
+  })
 
   // workflow of calibrating
   .register(RuleId.CalibrationTriggered, function (this: Rule, params: any) {

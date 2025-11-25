@@ -16,7 +16,7 @@ body:not([data-progress]) #stop {
 }
 
 input[type=button] {
-    padding: 10px 20px;
+    padding: 30px 5%;
 }
 
 section {
@@ -29,7 +29,7 @@ section {
     justify-content: center;
 }
 
-#charts-container {
+#charts-container, #config-container {
     position: relative;
     width: 100%;
 }
@@ -37,4 +37,16 @@ section {
 #charts {
     height: 240px;
     width: 100%;
+}
+
+.only-emulated {
+    display: none;
+}
+
+body.emulated-sensor .only-emulated {
+    display: initial;
+}
+
+.warn {
+    background-color: #ff9999;
 }

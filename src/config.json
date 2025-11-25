@@ -9,6 +9,8 @@
   "maxDelaySearchArea": 4,
 
   "accMult": 3,
-  "soundMult": 0.6,
-  "resultMult": 0.03
+  "soundMult": 1,
+  "resultMult": 0.03,
+
+  "emulatedTimerFreq": 20
 }

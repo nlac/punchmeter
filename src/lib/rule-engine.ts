@@ -42,9 +42,7 @@ type TriggerOptions = {
 
 export class RuleEngine {
   protected rules: Rule[] = [];
-
   protected triggerQueue: TriggerOptions[] = [];
-  protected flushScheduled: boolean = false;
 
   // make it a singleton
   protected constructor() {}
@@ -92,12 +90,10 @@ export class RuleEngine {
     return false;
   }
 
-  // firing all triggers in the queue
+  // firing all triggers
   protected flushTriggers() {
-    this.flushScheduled = false;
     const triggers = [...this.triggerQueue];
     this.triggerQueue = [];
-
     for (const trigger of triggers) {
       if (this.flushTrigger(trigger)) {
         break;
@@ -105,15 +101,14 @@ export class RuleEngine {
     }
   }
 
-  // explicitly scheduling a trigger in the microtask queue
+  // explicitly scheduling a trigger by putting it into the microtask queue
   trigger(
     include: (RegExp | string)[] | undefined,
     exclude?: (RegExp | string)[] | undefined,
     params?: any
   ) {
     this.triggerQueue.push({ include, exclude, params });
-    if (!this.flushScheduled) {
-      this.flushScheduled = true;
+    if (this.triggerQueue.length === 1) {
       queueMicrotask(this.flushTriggers.bind(this));
     }
   }

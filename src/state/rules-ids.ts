@@ -1,5 +1,7 @@
 // enum for rule ids to trace workflow + refactor more easy
 export enum RuleId {
+  SensorPresenceDetermined = "sensor_presence_determined",
+
   Listening = "listening",
 
   CalibrationTriggered = "calibrate_button_clicked",

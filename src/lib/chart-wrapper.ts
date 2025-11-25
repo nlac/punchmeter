@@ -36,6 +36,13 @@ export class ChartWrapper {
         maintainAspectRatio: false,
         plugins: {
           decimation: false, // https://www.chartjs.org/docs/latest/configuration/decimation.html
+          legend: {
+            display: true,
+            //position: "bottom"
+            labels: {
+               
+            }
+          }
         },
         borderWidth: 1,
         fill: false,
