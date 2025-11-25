@@ -77,7 +77,7 @@ export class ChartState {
           y: {
             type: "linear",
             title: { text: "Value", display: true },
-            min: -this.maxChart,
+            min: 0, //-this.maxChart,
             max: this.maxChart,
           },
         },

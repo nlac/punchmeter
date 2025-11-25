@@ -1,7 +1,8 @@
 :root {
+    --chart-height: 150px;
     --gap: 12px;
     --pad-y: 12px;
-    --border-radius: 12px;
+    --border-radius: 6px;
 
     --bg-color: #000;
     --header-color: #fff;
@@ -47,10 +48,11 @@ section>* {
 }
 
 #charts {
-    height: 240px;
+    height: var(--chart-height);
     width: 100%;
-    box-shadow: 0 0 5px 5px rgb(255 255 255 / 0.2);
-    margin-bottom: calc(2*var(--gap));
+    box-shadow: 0 0 3px 3px rgb(255 255 255 / 0.1);
+    border: 1px solid rgb(255 255 255 / 0.3);
+    border-radius: var(--border-radius);
 }
 
 .only-emulated {
@@ -66,34 +68,21 @@ body.emulated-sensor .only-emulated {
 }
 
 .stat-card {
-    background: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgb(255 255 255 / 0.2);
+    border: 1px solid rgb(255 255 255 / 0.3);
     color: #fff;
-    padding: var(--pad-y) var(--gap);
+    padding: calc(0.5*var(--pad-y)) var(--gap);
     border-radius: var(--border-radius);
     text-align: center;
-    border-top: 4px solid rgba(255, 255, 255, 0.3);
     flex: auto;
     overflow-x: auto;
 
-    &.info {
-        border-top: 4px solid #38bdf8;
-    }
-
-    &.success {
-        border-top: 4px solid #4ade80;
-    }
-
-    &.warning {
-        border-top: 4px solid var(--warning-color);
-    }
-
     .stat-label {
-        font-size: 0.75rem;
+        font-size: 0.5rem;
         text-transform: uppercase;
-        letter-spacing: 0.05rem;
+        letter-spacing: 0.1rem;
         opacity: 0.75;
-        margin-bottom: 8px;
+        margin-bottom: calc(0.5*var(--gap));
     }
 
     .stat-values {
@@ -102,24 +91,30 @@ body.emulated-sensor .only-emulated {
     }
 
     .stat-value {
-        font-size: 2.5rem;
+        font-size: 2.2rem;
         font-weight: bold;
         line-height: 1;
         font-variant-numeric: tabular-nums;
+
         &.weak-punches {
             color: var(--warning-color);
         }
-        &.strong-punches {
+
+        &.strong-punches,
+        &.strong-percent {
             color: var(--success-color);
         }
-        &.punches {
-            
+
+        &.punches,
+        &.average-power {
+            color: var(--info-color);
         }
     }
 }
 
 #buttons-container {
     flex-direction: column;
+    gap: 0;
 }
 
 input[type=button] {
@@ -136,4 +131,5 @@ input[type=button] {
     cursor: pointer;
     background-color: #0ea5e9;
     outline: none;
+    box-shadow: 0 0 5px 5px rgba(14, 165, 233, 0.3);
 }

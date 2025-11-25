@@ -3,7 +3,6 @@ import { RuleId } from "./state/rules-ids";
 import { TrainState, TrainStatus } from "./state/train";
 import { hasSensor, setupEmulate } from "./lib/emulate-sensor";
 
-
 const appState = new TrainState();
 
 setupEmulate(appState);
@@ -49,6 +48,10 @@ RuleEngine.get()
   })
   .register(RuleId.TrainPause, function (this: Rule) {
     appState.pauseTraining();
+    return true;
+  })
+  .register(RuleId.TrainContinue, function (this: Rule) {
+    appState.continueTraining();
     return true;
   })
   .register(RuleId.TrainFinish, function (this: Rule) {

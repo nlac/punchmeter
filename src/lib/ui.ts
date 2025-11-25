@@ -30,10 +30,11 @@ export const setupButtons = (buttonState: ButtonState[]) => {
 
 export enum DisplayAttrs {
   Time = "time",
-  Average = "average",
   Punches = "punches",
   WeakPunches = "weak-punches",
-  StrongPunches = "strong-punches"
+  StrongPunches = "strong-punches",
+  AveragePower = "average-power",
+  StrongPercent = "strong-percent",
 }
 
 export const updateCard = (attr: string, value: string) =>

@@ -12,5 +12,6 @@ export enum RuleId {
 
   TrainStart = "train-start",
   TrainPause = "train-pause",
+  TrainContinue = "train-continue",
   TrainFinish = "train-finish",
 }

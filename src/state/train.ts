@@ -30,7 +30,7 @@ export class TrainState extends CalibrateState {
 
   //config:
   noiseLimit = 0.1;
-  weakLimit = 0.3;
+  weakLimit = 0.25;
 
   punches: Punch[] = [];
   startTime = 0;
@@ -49,13 +49,29 @@ export class TrainState extends CalibrateState {
     );
   }
 
-  startButton(disabled: boolean, title: string) {
+  startButton() {
     return {
-      title,
-      disabled,
+      title: "Start",
       onClick: () => {
-        //await sound.speak("Go ahead!");
         RuleEngine.get().trigger([RuleId.TrainStart]);
+      },
+    };
+  }
+
+  pauseButton() {
+    return {
+      title: "Pause",
+      onClick: () => {
+        RuleEngine.get().trigger([RuleId.TrainPause]);
+      },
+    };
+  }
+
+  continueButton() {
+    return {
+      title: "Continue",
+      onClick: () => {
+        RuleEngine.get().trigger([RuleId.TrainContinue]);
       },
     };
   }
@@ -70,51 +86,57 @@ export class TrainState extends CalibrateState {
     };
   }
 
-  pauseButton(disabled: boolean) {
-    return {
-      title: "Pause",
-      disabled,
-      onClick: () => {
-        RuleEngine.get().trigger([RuleId.TrainPause]);
-      },
-    };
-  }
-
   finishTraining(first: boolean) {
-    setupButtons([this.startButton(false, "Start"), this.finishButton(true)]);
-
-    // reset
-    this.resetWindow();
-    this.enableCharts = false;
+    setupButtons([this.startButton(), this.finishButton(true)]);
     this.trainStatus = TrainStatus.Stopped;
-    this.punches = [];
-    this.startTime = Date.now();
-    this.elapsedTime = 0;
-
-    sound.speak("Whenever you're ready - push Start and keep punching!");
+    this.enableCharts = false;
+    sound.speak(
+      first
+        ? "Whenever you're ready - push Start and keep punching!"
+        : "Nice job! Take a rest."
+    );
   }
 
   async startTraining() {
-    setupButtons([this.pauseButton(false), this.finishButton(false)]);
-    await sound.speak("Go ahead!");
+    setupButtons([this.pauseButton(), this.finishButton(false)]);
 
+    // reset
+    this.resetWindow();
     this.startTime = Date.now();
+    this.punches = [];
+    this.elapsedTime = 0;
+    updateCard(DisplayAttrs.AveragePower, "0.0");
+    updateCard(DisplayAttrs.StrongPercent, "0.0");
+    updateCard(DisplayAttrs.Punches, "0");
+    updateCard(DisplayAttrs.StrongPunches, "0");
+    updateCard(DisplayAttrs.WeakPunches, "0");
 
     this.enableCharts = true;
     this.trainStatus = TrainStatus.Started;
+
+    sound.speak("Go ahead!");
   }
 
   pauseTraining() {
-    setupButtons([
-      this.startButton(false, "Continue"),
-      this.finishButton(false),
-    ]);
-    sound.speak("Waiting for continue.");
+    setupButtons([this.continueButton(), this.finishButton(false)]);
+
+    // stop listening to event callback
     this.enableCharts = false;
-
+    // inc. elapsde time
     this.elapsedTime += Date.now() - this.startTime;
-
     this.trainStatus = TrainStatus.Paused;
+
+    sound.speak("Waiting for continue.");
+  }
+
+  async continueTraining() {
+    setupButtons([this.pauseButton(), this.finishButton(false)]);
+
+    this.enableCharts = true;
+    this.startTime = Date.now();
+    this.trainStatus = TrainStatus.Started;
+
+    sound.speak("Continue training!");
   }
 
   getPunch() {
@@ -151,17 +173,24 @@ export class TrainState extends CalibrateState {
         relStrength,
         time: Date.now(),
       });
-      const average =
+      const averagePower =
         this.punches.reduce<number>(
           (acc: number, p: Punch) => acc + p.relStrength,
           0
         ) / this.punches.length;
 
       const nStrong = this.getStrongPunches();
-      updateCard(DisplayAttrs.Average, (100.0*average).toFixed(1));
+      updateCard(
+        DisplayAttrs.StrongPercent,
+        ((100.0 * nStrong) / this.punches.length).toFixed(1)
+      );
+      updateCard(DisplayAttrs.AveragePower, (100.0 * averagePower).toFixed(1));
       updateCard(DisplayAttrs.Punches, String(this.punches.length));
       updateCard(DisplayAttrs.StrongPunches, String(nStrong));
-      updateCard(DisplayAttrs.WeakPunches, String(this.punches.length - nStrong));
+      updateCard(
+        DisplayAttrs.WeakPunches,
+        String(this.punches.length - nStrong)
+      );
     }
   }
 }
