@@ -28,13 +28,14 @@ export class TrainState extends CalibrateState {
   trainStatus: TrainStatus;
   enableCharts = false;
 
-  //config:
+  //TODO: make these configurable from the ui  (at least the weakLimit)
   noiseLimit = 0.1;
   weakLimit = 0.25;
 
   punches: Punch[] = [];
   startTime = 0;
   elapsedTime = 0;
+  lastMinute = 0;
 
   constructor() {
     super();
@@ -105,6 +106,7 @@ export class TrainState extends CalibrateState {
     this.startTime = Date.now();
     this.punches = [];
     this.elapsedTime = 0;
+    this.lastMinute = 0;
     updateCard(DisplayAttrs.AveragePower, "0.0");
     updateCard(DisplayAttrs.StrongPercent, "0.0");
     updateCard(DisplayAttrs.Punches, "0");
@@ -159,10 +161,18 @@ export class TrainState extends CalibrateState {
   }
 
   processTraining() {
+    // dealing with time
     const timeSoFar = this.elapsedTime + Date.now() - this.startTime;
+    const minutes = Math.floor(timeSoFar / 60000);
+    if (minutes > this.lastMinute) {
+      this.lastMinute = minutes;
+      if (minutes) {
+        sound.speak(`${minutes} minutes elapsed`);
+      }
+    }
     updateCard(DisplayAttrs.Time, formatTime(timeSoFar));
 
-    // TODO: detecting + counting valid punches
+    // dealing with punches
     const relStrength = this.getPunch();
     if (!relStrength) {
       return;

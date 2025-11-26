@@ -80,7 +80,10 @@ export class CalibrateState extends ChartState {
       accMax = 0,
       soundMaxIdx = 0,
       accMaxIdx = 0;
+    let avgSound = 0;
+    
     for (let i = 0; i < this.slidedSoundArray.length; i++) {
+      avgSound += this.slidedSoundArray[i];
       if (this.slidedSoundArray[i] > soundMax) {
         soundMax = this.slidedSoundArray[i];
         soundMaxIdx = i;
@@ -90,7 +93,15 @@ export class CalibrateState extends ChartState {
         accMaxIdx = i;
       }
     }
-    // triggering DelaySet
+    avgSound /= this.slidedSoundArray.length;
+    // TODO put it into config
+    if (soundMax / avgSound < 50) {
+      console.info(`no punch detected - restart calibration`);
+      this.soundDelay = undefined;
+      this.resetWindow();
+      return;
+    }
+
     const delay = soundMaxIdx - accMaxIdx;
     if (delay <= 0 && hasSensor()) {
       console.info(`soundDelay in invalid - restart calibrating`);
@@ -99,6 +110,7 @@ export class CalibrateState extends ChartState {
       return;
     }
 
+    // triggering DelaySet
     this.soundDelay = Math.abs(delay); // supposed to be positive
     this.resetWindow();
     console.info(`soundDelay: ${this.soundDelay}`);
