@@ -77,10 +77,10 @@ export class RuleEngine {
         (!trigger.include || trigger.include.some(matcher)) &&
         (!trigger.exclude || !trigger.exclude.some(matcher))
       ) {
-        console.debug(
-          `RE: running logic of ${rule.id} with params`,
-          trigger.params
-        );
+        //console.debug(
+        //  `RE: running logic of ${rule.id} with params`,
+        //  trigger.params
+        //);
         if (rule.run(trigger.params)) {
           // stop evaluation of rules if a logic returns true
           return true;

@@ -12,19 +12,6 @@ const pushAndSlide = (newElement: any[], arr: any[], maxLength: number) => {
   }
 };
 
-const getPower = (
-  arr1: number[],
-  from1: number,
-  to1: number,
-  arr2: number[],
-  from2: number,
-  to2: number
-) => {
-  const max1 = Math.max(...arr1.slice(from1, to1));
-  const max2 = Math.max(...arr2.slice(from2, to2));
-  return max1 * max2;
-};
-
 const isDelayCalibrated = (delay: any) =>
   typeof delay === "number" && delay > 0;
 
@@ -38,9 +25,9 @@ export class ChartState {
   freqDataArray!: Uint8Array;
 
   maxChart = 100;
-  accMult = 1.0;
-  soundMult = 0.1;
-  powerMult = 0.01;
+  accMult: number;
+  soundMult: number;
+  powerMult: number;
 
   @Trigger([RuleId.DelayCalibrated], [], isDelayCalibrated)
   soundDelay!: number | undefined;
@@ -49,6 +36,10 @@ export class ChartState {
   maxPower!: number;
 
   constructor() {
+    this.soundMult = config.soundMult;
+    this.powerMult = config.powerMult;
+    this.accMult = config.accMult;
+
     this.chartWrapper = new ChartWrapper(
       $<HTMLCanvasElement>("#charts")!.getContext("2d"),
       {
@@ -98,6 +89,19 @@ export class ChartState {
     return true;
   }
 
+  protected getPower(newSoundValue: number, newAccValue: number) {
+    const len = this.slidedSoundArray.length;
+    const d = this.soundDelay ?? 0;
+    if (len - 1 - d <= 0) {
+      return 0;
+    }
+    if (hasSensor()) {
+      return newSoundValue * this.slidedAccArray[len - 1 - d];
+    }
+
+    return newAccValue * this.slidedSoundArray[len - 1 - d];
+  }
+
   protected async _listener(e: DeviceMotionEvent) {
     if (!this.shouldListen()) {
       return;
@@ -130,23 +134,7 @@ export class ChartState {
       soundDerivative,
     ])[0];
 
-    // calculating power from the two type of signals
-    // since sound is processed with a delay compared to the acceleration, it should be corrected:
-    // -> the corresponding acceleration value is in the past
-    const len = this.slidedSoundArray.length;
-    const r = config.maxDelaySearchArea;
-    const d = this.soundDelay ?? 0;
-    const power =
-      len >= r + d
-        ? getPower(
-            hasSensor() ? this.slidedAccArray : this.slidedSoundArray,
-            len - r - d,
-            len - d,
-            hasSensor() ? this.slidedSoundArray : this.slidedAccArray,
-            len - r,
-            len
-          )
-        : 0;
+    const power = this.getPower(heavySoundDerivative, heavyAcc);
 
     const heavyPower = sound.heavyValue("power", config.powerMass, [power])[0];
 

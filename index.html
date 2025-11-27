@@ -46,16 +46,37 @@
         <div class="stat-value average-power">0.0</div>
       </div>
     </section>
+    <section id="config-container">
+      <div class="stat-card btn" id="treshold-card">
+        <div class="stat-label">level</div>
+        <div class="stat-value btn-title"></div>
+        <div class="stat-config">
+          <select>
+            <option value="beginner">beginner</option>
+            <option value="intermediate">intermediate</option>
+            <option value="advanced">advanced</option>
+            <option value="pro">pro</option>
+          </select>
+          <span class="stat-config-close">close</span>
+        </div>
+      </div>
+    </section>
     <section id="buttons-container">
-      <input type="button" id="action1" />
-      <input type="button" id="action2" />
+      <input type="button" id="action1" class="btn btn-title" />
+      <input type="button" id="action2" class="btn btn-title" />
+    </section>
+    <section id="debug-container">
+      <pre></pre>
     </section>
     <section id="usage-container">
       <div>
         <p>How to use:</p>
         <ul>
           <li>For the best effect, use this app in Firefox mobile.</li>
-          <li>Attach the phone to the heavy bag where it can swing with the bag but you can't reach it so cannot break it</li>
+          <li>
+            Attach the phone to the heavy bag where it can swing with the bag
+            but you can't reach it so cannot break it
+          </li>
           <li>Press [Calibrate] and follow the instructions</li>
         </ul>
       </div>

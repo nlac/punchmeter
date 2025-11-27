@@ -39,3 +39,53 @@ export enum DisplayAttrs {
 
 export const updateCard = (attr: string, value: string) =>
   (($(".display-container ." + attr) as HTMLSpanElement)!.innerHTML = value);
+
+export const debug = (text: string, prepend = true) => {
+  const cont = $("#debug-container pre")!;
+  if (!prepend) {
+    cont.innerHTML = "";
+  }
+  const isEmpty = cont.innerHTML === "";
+  cont.innerHTML =
+    text +
+    (isEmpty
+      ? ""
+      : `
+`) +
+    cont.innerHTML;
+};
+
+export const initConfigItem = (id: string, initialValue: string) => {
+  const card = $(`#${id}-card`)! as HTMLDivElement;
+  const display = card.querySelector(
+    `#${id}-card .stat-value`
+  )! as HTMLDivElement;
+  const config = card.querySelector(
+    `#${id}-card .stat-config`
+  )! as HTMLDivElement;
+  const select = config.querySelector("select")! as HTMLSelectElement;
+  const close = config.querySelector(
+    ".stat-config-close"
+  )! as HTMLButtonElement;
+
+  display!.innerHTML = initialValue;
+  select.value = initialValue;
+
+  card.onclick = () => {
+    card.classList.add("active");
+  };
+
+  select.onchange = (e) => {
+    e.stopPropagation();
+    const val = (select.querySelector("option:checked") as HTMLOptionElement)!
+      .value;
+    display.innerHTML = val;
+    return false;
+  };
+
+  close.onclick = (e) => {
+    e.stopPropagation();
+    card.classList.remove("active");
+    return false;
+  };
+};

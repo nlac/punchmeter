@@ -2,6 +2,7 @@ import { RuleId } from "../state/rules-ids";
 import { TrainState } from "../state/train";
 import { RuleEngine } from "./rule-engine";
 import * as config from "../config.json";
+import { debug } from "./ui";
 
 let _hasSensor: boolean | undefined = undefined;
 
@@ -46,7 +47,7 @@ const probeSensor: () => Promise<boolean> = () => {
 
     window.addEventListener("devicemotion", handler);
 
-    timer = setTimeout(() => finish(false), 500);
+    timer = setTimeout(() => finish(false), 3000);
 
     // for iOS 13+
     if (typeof (DeviceMotionEvent as any).requestPermission === "function") {
@@ -72,6 +73,8 @@ export const setupEmulate = async (appState: TrainState) => {
     // no emulation needed
     return;
   }
+
+  debug(`setupEmulate: adding fake event handling`);
 
   let timer: any;
 

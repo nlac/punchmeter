@@ -1,16 +1,21 @@
 {
   "maxTime": 256,
   "fftSize": 512,
-  
-  "freqMass": 0.5,
-  "accMass": 0.5,
-  "powerMass": 0.5,
-  
-  "maxDelaySearchArea": 4,
 
-  "accMult": 3,
-  "soundMult": 1,
+  "freqMass": 0.5,
+  "accMass": 0.7,
+  "powerMass": 0.7,
+
+  "accMult": 1.5,
+  "soundMult": 0.2,
   "powerMult": 0.03,
 
-  "emulatedTimerFreq": 25
+  "emulatedTimerFreq": 25,
+
+  "weakLimitMap": {
+    "beginner": 0.35,
+    "intermediate": 0.55,
+    "advanced": 0.75,
+    "pro": 0.85
+  }
 }

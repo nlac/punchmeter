@@ -1,6 +1,6 @@
 import * as config from "../config.json";
 import { sound } from "../lib/sound";
-import { setupButtons } from "../lib/ui";
+import { debug, setupButtons } from "../lib/ui";
 import { RuleEngine } from "../lib/rule-engine";
 import { RuleId } from "./rules-ids";
 import { ChartState } from "./chart";
@@ -44,7 +44,9 @@ export class CalibrateState extends ChartState {
         disabled: true,
       },
     ]);
-    await sound.speak("Hit one single punch after the beep");
+    await sound.speak(
+      "Hit one single punch after the beep. 5, 4, 3, 2, 1 - ready!"
+    );
     await sound.beep();
     this.resetWindow();
     if (!this.listener) {
@@ -62,7 +64,7 @@ export class CalibrateState extends ChartState {
         disabled: true,
       },
     ]);
-    await sound.speak("Hit 3 power punch after the beep");
+    await sound.speak("Hit 3 power punch after the beep. 3, 2, 1 - ready!");
     await sound.beep();
     this.resetWindow();
     RuleEngine.get().trigger([RuleId.PowerCalibrationStarted]);
@@ -80,10 +82,13 @@ export class CalibrateState extends ChartState {
       accMax = 0,
       soundMaxIdx = 0,
       accMaxIdx = 0;
-    let avgSound = 0;
-    
+    let avgSound = 0,
+      avgAcc = 0;
+
     for (let i = 0; i < this.slidedSoundArray.length; i++) {
       avgSound += this.slidedSoundArray[i];
+      avgAcc += this.slidedAccArray[i];
+
       if (this.slidedSoundArray[i] > soundMax) {
         soundMax = this.slidedSoundArray[i];
         soundMaxIdx = i;
@@ -93,9 +98,17 @@ export class CalibrateState extends ChartState {
         accMaxIdx = i;
       }
     }
+
     avgSound /= this.slidedSoundArray.length;
+    avgAcc /= this.slidedSoundArray.length;
+    debug(
+      `calcDelay: avgSound=${avgSound.toFixed(2)} / ${(soundMax / avgSound).toFixed(2)}`
+    );
+    debug(`calcDelay: avgAcc=${avgAcc.toFixed(2)} / ${(accMax / avgAcc).toFixed(2)}`);
+
     // TODO put it into config
-    if (soundMax / avgSound < 50) {
+    if ((soundMax * accMax) / (avgSound * avgAcc) < 25) {
+      sound.speak(`Again`);
       console.info(`no punch detected - restart calibration`);
       this.soundDelay = undefined;
       this.resetWindow();
@@ -126,12 +139,13 @@ export class CalibrateState extends ChartState {
     const maxSound = Math.max(...this.slidedSoundArray);
     const maxAcc = Math.max(...this.slidedAccArray);
 
-    const gap = 0.75;
+    const gap = 0.7;
     this.accMult = (gap * this.maxChart) / maxAcc;
     this.soundMult = (gap * this.maxChart) / maxSound;
     this.powerMult = (gap * this.maxChart) / this.maxPower;
 
     this.resetWindow();
-    console.info(`maxPower: ${this.maxPower}`);
+    console.info(`maxPower: ${this.maxPower.toFixed(2)}`);
+    debug(`calcPower: maxPower=${this.maxPower.toFixed(2)}`);
   }
 }

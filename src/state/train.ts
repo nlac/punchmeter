@@ -1,8 +1,15 @@
 import { RuleEngine } from "../lib/rule-engine";
 import { sound } from "../lib/sound";
-import { updateCard, DisplayAttrs, setupButtons } from "../lib/ui";
+import {
+  updateCard,
+  DisplayAttrs,
+  setupButtons,
+  debug,
+  initConfigItem,
+} from "../lib/ui";
 import { CalibrateState } from "./calibrate";
 import { RuleId } from "./rules-ids";
+import * as config from "../config.json";
 
 export enum TrainStatus {
   Stopped = "stopped",
@@ -24,13 +31,15 @@ const formatTime = (ms: number) => {
     .padStart(2, "0")}`;
 };
 
+type WeakLimitKeys = keyof typeof config.weakLimitMap;
+
 export class TrainState extends CalibrateState {
   trainStatus: TrainStatus;
   enableCharts = false;
 
   //TODO: make these configurable from the ui  (at least the weakLimit)
-  noiseLimit = 0.1;
-  weakLimit = 0.25;
+  noiseLimit = 0.15;
+  weakLimit: WeakLimitKeys = "intermediate";
 
   punches: Punch[] = [];
   startTime = 0;
@@ -41,6 +50,8 @@ export class TrainState extends CalibrateState {
     super();
     this.enableCharts = true;
     this.trainStatus = TrainStatus.Stopped;
+
+    initConfigItem("treshold", this.weakLimit);
   }
 
   protected shouldListen() {
@@ -87,15 +98,24 @@ export class TrainState extends CalibrateState {
     };
   }
 
-  finishTraining(first: boolean) {
+  async finishTraining(first: boolean) {
     setupButtons([this.startButton(), this.finishButton(true)]);
     this.trainStatus = TrainStatus.Stopped;
     this.enableCharts = false;
-    sound.speak(
-      first
-        ? "Whenever you're ready - push Start and keep punching!"
-        : "Nice job! Take a rest."
-    );
+    if (first) {
+      await sound.speak("Start keep punching in 3, 2, 1 - ready!");
+      RuleEngine.get().trigger([RuleId.TrainStart]);
+    } else {
+      const nStrong = this.getStrongPunches();
+      const totalSeconds = Math.floor(
+        (this.elapsedTime + Date.now() - this.startTime) / 1000
+      );
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = Math.floor(totalSeconds % 60);
+      sound.speak(
+        `Nice job: ${nStrong} strong punches in ${minutes} minutes ${seconds} seconds.`
+      );
+    }
   }
 
   async startTraining() {
@@ -153,7 +173,7 @@ export class TrainState extends CalibrateState {
   }
 
   getStrongPunches() {
-    const weakLimit = this.weakLimit;
+    const weakLimit = config.weakLimitMap[this.weakLimit];
     return this.punches.reduce<number>(
       (acc: number, p: Punch) => acc + (p.relStrength >= weakLimit ? 1 : 0),
       0
@@ -201,6 +221,13 @@ export class TrainState extends CalibrateState {
         DisplayAttrs.WeakPunches,
         String(this.punches.length - nStrong)
       );
+
+      if (nStrong && !(nStrong % 25)) {
+        sound.speak(`${nStrong} strong punches!`);
+      }
+
+      debug(`ProcessTraining: RS=${relStrength.toFixed(2)}`, false);
+      debug(`ProcessTraining: WL=${config.weakLimitMap[this.weakLimit]}`);
     }
   }
 }
