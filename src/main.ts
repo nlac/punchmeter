@@ -10,9 +10,16 @@ setupEmulate(appState);
 // high level application logic extracted here
 RuleEngine.get()
   .register(RuleId.SensorPresenceDetermined, function (this: Rule) {
+    document.body.classList.add("sensor-checked");
     if (!hasSensor()) {
       document.body.classList.add("emulated-sensor");
     }
+    return true;
+  })
+
+  .register(RuleId.MonitorTriggered, function (this: Rule) {
+    appState.enableCharts = true;
+    appState.startMonitor();
     return true;
   })
 
@@ -63,6 +70,9 @@ RuleEngine.get()
   .register("listening", function (this: Rule) {
     if (appState.enableCharts) {
       appState.updateChart();
+      if (appState.isMonitoring) {
+        return;
+      }
     }
 
     if (!appState.isDelayCalibrated() && appState.hasFullWindow()) {

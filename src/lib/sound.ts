@@ -5,9 +5,9 @@ class Sound {
   stream: any;
   analyser: any;
   mediaStream: any;
-  lastArrays: Record<string, any>;
-  heavyValueArrays: Record<string, any>;
-  lastSpokenText: string = "";
+  protected lastArrays: Record<string, any>;
+  protected heavyValueArrays: Record<string, any>;
+  protected lastSpokenText: string = "";
 
   constructor() {
     this.lastArrays = {};
@@ -102,16 +102,6 @@ class Sound {
     return this.analyser.frequencyBinCount;
   }
 
-  derivative(id, arr) {
-    if (!this.lastArrays[id]) {
-      this.lastArrays[id] = Array.from(arr);
-    }
-    const lastArray = this.lastArrays[id];
-    const result = arr.map((v, i) => v - lastArray[i]);
-    this.lastArrays[id] = Array.from(lastArray);
-    return result;
-  }
-
   heavyValue(id, mass, dataArray) {
     if (mass === 0) {
       return Array.from(dataArray);
@@ -126,7 +116,7 @@ class Sound {
     for (let i = 0; i < h.arr.length; i++) {
       h.arr[i] = h.arr[i] * h.mass + dataArray[i] * (1.0 - h.mass);
     }
-    return h.arr;
+    return h.arr.slice();
   }
 
   avg(dataArray, r) {
@@ -143,7 +133,7 @@ class Sound {
 
   groupAvg(dataArray, group, takeAbs) {
     if (group <= 1) {
-      return Array.from(dataArray);
+      return Array.from(dataArray) as number[];
     }
     //let start = 0;
     return Array.from({ length: dataArray.length / group }, (_, i) => {
@@ -153,7 +143,16 @@ class Sound {
           .slice(start, start + group)
           .reduce((sum, v) => sum + (takeAbs ? Math.abs(v) : v), 0) / group
       );
-    });
+    }) as number[];
+  }
+
+  normalizeArray(arr: number[]) {
+    const sum = arr.reduce((s, v) => s + v, 0);
+    return arr.map((v) => v / sum);
+  }
+
+  distance(arr1: number[], arr2: number[]) {
+    return arr1.reduce((d, v, idx) => d + Math.abs(v - arr2[idx]), 0.0001);
   }
 
   toChartData(dataArray, offsetX, multX, offsetY, multY) {

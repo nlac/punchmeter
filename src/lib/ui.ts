@@ -55,7 +55,7 @@ export const debug = (text: string, prepend = true) => {
     cont.innerHTML;
 };
 
-export const initConfigItem = (id: string, initialValue: string) => {
+export const initConfigItem = (id: string, initialValue: string, onChange: (selectedValue: string) => void) => {
   const card = $(`#${id}-card`)! as HTMLDivElement;
   const display = card.querySelector(
     `#${id}-card .stat-value`
@@ -80,6 +80,8 @@ export const initConfigItem = (id: string, initialValue: string) => {
     const val = (select.querySelector("option:checked") as HTMLOptionElement)!
       .value;
     display.innerHTML = val;
+    onChange(val);
+    close.click();
     return false;
   };
 

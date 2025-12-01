@@ -38,8 +38,8 @@ export class TrainState extends CalibrateState {
   enableCharts = false;
 
   //TODO: make these configurable from the ui  (at least the weakLimit)
-  noiseLimit = 0.15;
-  weakLimit: WeakLimitKeys = "intermediate";
+  noiseLimit = 0.1;
+  weakLimit: WeakLimitKeys = "beginner";
 
   punches: Punch[] = [];
   startTime = 0;
@@ -50,8 +50,10 @@ export class TrainState extends CalibrateState {
     super();
     this.enableCharts = true;
     this.trainStatus = TrainStatus.Stopped;
-
-    initConfigItem("treshold", this.weakLimit);
+    const me = this;
+    initConfigItem("treshold", this.weakLimit, (wl: string) => {
+      me.weakLimit = wl as unknown as WeakLimitKeys;
+    });
   }
 
   protected shouldListen() {
@@ -226,8 +228,11 @@ export class TrainState extends CalibrateState {
         sound.speak(`${nStrong} strong punches!`);
       }
 
-      debug(`ProcessTraining: RS=${relStrength.toFixed(2)}`, false);
-      debug(`ProcessTraining: WL=${config.weakLimitMap[this.weakLimit]}`);
+      debug(
+        `rel.strength=${relStrength.toFixed(2)} (lmt: ${
+          config.weakLimitMap[this.weakLimit]
+        })`
+      );
     }
   }
 }

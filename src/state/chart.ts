@@ -5,7 +5,7 @@ import { RuleId } from "./rules-ids";
 import { sound } from "../lib/sound";
 import { hasSensor } from "../lib/emulate-sensor";
 
-const pushAndSlide = (newElement: any[], arr: any[], maxLength: number) => {
+const pushAndSlide = (newElement: any, arr: any[], maxLength: number) => {
   arr.push(newElement);
   if (arr.length > maxLength) {
     arr.shift();
@@ -20,14 +20,19 @@ const isPowerCalibrated = (power: number) => power > 0;
 export class ChartState {
   protected chartWrapper: ChartWrapper;
   slidedAccArray: number[] = [];
+  heavySpectrum: number[] = [];
+  slidedSpectrumArray: number[][] = [];
   slidedSoundArray: number[] = [];
   slidedPowerArray: number[] = [];
   freqDataArray!: Uint8Array;
 
   maxChart = 100;
   accMult: number;
+  spectMult: number;
   soundMult: number;
   powerMult: number;
+
+  freqWeights: number[] = [];
 
   @Trigger([RuleId.DelayCalibrated], [], isDelayCalibrated)
   soundDelay!: number | undefined;
@@ -36,6 +41,7 @@ export class ChartState {
   maxPower!: number;
 
   constructor() {
+    this.spectMult = config.spectMult;
     this.soundMult = config.soundMult;
     this.powerMult = config.powerMult;
     this.accMult = config.accMult;
@@ -43,17 +49,21 @@ export class ChartState {
     this.chartWrapper = new ChartWrapper(
       $<HTMLCanvasElement>("#charts")!.getContext("2d"),
       {
-        power: {
+        pwr: {
           backgroundColor: "#66ff66",
           borderColor: "#66ff66",
         },
-        sound: {
+        spect: {
+          backgroundColor: "#cccccc",
+          borderColor: "#cccccc",
+        },
+        snd: {
           backgroundColor: "#993333",
           borderColor: "#993333",
         },
         acc: {
-          backgroundColor: "#3333bb",
-          borderColor: "#3333bb",
+          backgroundColor: "#0033cc",
+          borderColor: "#0033cc",
         },
       },
       {
@@ -123,33 +133,46 @@ export class ChartState {
     }
 
     sound.analyser.getByteFrequencyData(this.freqDataArray);
+    const momentarySpectrum = sound.groupAvg(
+      this.freqDataArray,
+      config.freqGroupSize,
+      true
+    );
 
-    const avgSound =
-      this.freqDataArray.reduce((sum, v) => sum + v, 0) /
-      this.freqDataArray.length;
+    // temp.smoothed spectrum array
+    this.heavySpectrum = sound.heavyValue(
+      "spectrum",
+      config.soundMass,
+      momentarySpectrum
+    );
 
-    const soundDerivative = sound.derivative("sound-der", [avgSound])[0];
+    // weighted spectrum intensity
+    const heavySound =
+      this.heavySpectrum.reduce((s, v) => s + v) /
+      (this.freqWeights.length
+        ? sound.distance(
+            sound.normalizeArray(this.heavySpectrum),
+            this.freqWeights
+          )
+        : 1);
 
-    const heavySoundDerivative = sound.heavyValue("freq", config.freqMass, [
-      soundDerivative,
-    ])[0];
+    // processing final power
 
-    const power = this.getPower(heavySoundDerivative, heavyAcc);
-
+    const power = this.getPower(heavySound, heavyAcc);
     const heavyPower = sound.heavyValue("power", config.powerMass, [power])[0];
 
-    // display
     pushAndSlide(heavyAcc, this.slidedAccArray, config.maxTime);
-    pushAndSlide(heavySoundDerivative, this.slidedSoundArray, config.maxTime);
+    pushAndSlide(this.heavySpectrum, this.slidedSpectrumArray, config.maxTime);
+    pushAndSlide(heavySound, this.slidedSoundArray, config.maxTime);
     pushAndSlide(heavyPower, this.slidedPowerArray, config.maxTime);
 
     RuleEngine.get().trigger([RuleId.Listening]);
   }
 
   updateChart() {
-    this.chartWrapper.update({
-      power: sound.toChartData(this.slidedPowerArray, 0, 1, 0, this.powerMult),
-      sound: sound.toChartData(this.slidedSoundArray, 0, 1, 0, this.soundMult),
+    const opts = {
+      pwr: sound.toChartData(this.slidedPowerArray, 0, 1, 0, this.powerMult),
+      snd: sound.toChartData(this.slidedSoundArray, 0, 1, 0, this.soundMult),
       acc: sound.toChartData(
         this.slidedAccArray,
         hasSensor() ? this.soundDelay ?? 0 : -(this.soundDelay ?? 0),
@@ -157,6 +180,16 @@ export class ChartState {
         0,
         this.accMult
       ),
-    });
+    };
+    if (config.enableMonitorButton) {
+      (opts as any).spect = sound.toChartData(
+        this.heavySpectrum,
+        0,
+        config.freqGroupSize,
+        0,
+        this.spectMult
+      );
+    }
+    this.chartWrapper.update(opts);
   }
 }

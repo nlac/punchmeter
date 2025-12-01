@@ -4,6 +4,8 @@ export enum RuleId {
 
   Listening = "listening",
 
+  MonitorTriggered = "monitor_clicked",
+
   CalibrationTriggered = "calibrate_button_clicked",
   DelayCalibrationStarted = "delay_calibration_process_started",
   DelayCalibrated = "delay_variable_calibrated",

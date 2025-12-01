@@ -96,7 +96,6 @@ body.emulated-sensor .only-emulated {
     text-transform: uppercase;
     letter-spacing: 0.1rem;
     opacity: 0.75;
-    xxxmargin-bottom: calc(0.5*var(--gap));
     white-space: nowrap;
 }
 
@@ -136,6 +135,14 @@ body.emulated-sensor .only-emulated {
     outline: none;
     height: var(--button-height);
     padding: 0;
+
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.sensor-checked .btn {
+    opacity: 1;
+    pointer-events: initial;
 }
 
 .btn-title {
@@ -185,6 +192,7 @@ body.emulated-sensor .only-emulated {
 #debug-container {
     flex-direction: column;
     gap: 0;
+
     pre {
         margin-block: 0;
         white-space: pre-line;
